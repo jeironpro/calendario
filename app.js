@@ -1,59 +1,75 @@
-document.addEventListener('DOMContentLoaded', renderizarCalendario); 
+document.addEventListener('DOMContentLoaded', renderizarCalendario);
 
 let fechaActual = new Date();
 let calendarioActual = fechaActual.getFullYear();
 
 function obtenerPrimerDiaSemana(mes) {
-    return new Date(calendarioActual, mes, 1).getDay() || 7;
+    // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+    // Ajustamos para que 1 = Lunes, ..., 7 = Domingo
+    const dia = new Date(calendarioActual, mes, 1).getDay();
+    return dia === 0 ? 7 : dia;
 }
 
-function renderizarCalendario() { 
-    const contenedorCalendario = document.querySelector('.contenedor-calendario'); 
+function renderizarCalendario() {
+    const contenedorCalendario = document.querySelector('.contenedor-calendario');
     contenedorCalendario.innerHTML = '';
 
-    const tituloCalendario = document.querySelector('.titulo'); 
-    tituloCalendario.innerHTML = 'CALENDARIO ' + calendarioActual.toString();
+    const tituloCalendario = document.querySelector('.titulo');
+    tituloCalendario.textContent = 'CALENDARIO ' + calendarioActual.toString();
 
-    const nombresMeses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']; 
-    
-    for (let mes = 0; mes < 12; mes++) { 
-        const tablaMes = document.createElement('table'); 
-        const captionMes = document.createElement('caption'); 
-        captionMes.textContent = nombresMeses[mes]; 
-        tablaMes.appendChild(captionMes); 
-        
-        const thead = document.createElement('thead'); 
-        const trDiasSemana = document.createElement('tr'); 
-        const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; 
-        diasSemana.forEach(dia => { 
-            const thDia = document.createElement('th'); 
-            thDia.textContent = dia; trDiasSemana.appendChild(thDia); 
-        }); 
-        thead.appendChild(trDiasSemana); 
-        tablaMes.appendChild(thead); 
+    const nombresMeses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
 
-        const tbody = document.createElement('tbody'); 
-        const diasEnMes = new Date(calendarioActual, mes + 1, 0).getDate(); 
+    for (let mes = 0; mes < 12; mes++) {
+        // Contenedor del mes (antes table)
+        const contenedorMes = document.createElement('div');
+        contenedorMes.classList.add('contenedor-mes');
+
+        // Título del mes (antes caption)
+        const tituloMes = document.createElement('div');
+        tituloMes.classList.add('titulo-mes');
+        tituloMes.textContent = nombresMeses[mes];
+        contenedorMes.appendChild(tituloMes);
+
+        // Tabla de días
+        const tablaDias = document.createElement('div');
+        tablaDias.classList.add('tabla-dias');
+
+        // Encabezados de días (L, M, X...)
+        const filaEncabezados = document.createElement('div');
+        filaEncabezados.classList.add('fila-encabezados');
+        const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+        diasSemana.forEach(dia => {
+            const celdaEncabezado = document.createElement('div');
+            celdaEncabezado.classList.add('celda-encabezado');
+            celdaEncabezado.textContent = dia;
+            filaEncabezados.appendChild(celdaEncabezado);
+        });
+        tablaDias.appendChild(filaEncabezados);
+
+        // Cuerpo de los días
+        const cuerpoDias = document.createElement('div');
+        cuerpoDias.classList.add('cuerpo-dias');
+
+        const diasEnMes = new Date(calendarioActual, mes + 1, 0).getDate();
         const primerDiaSemana = obtenerPrimerDiaSemana(mes);
-        
-        let contador = 1; 
-        for (let i = 0; i < 6; i++) { 
-            const trSemana = document.createElement('tr'); 
-            for (let j = 0; j < 7; j++) { 
-                const tdDia = document.createElement('td'); 
-                if (i === 0 && j < primerDiaSemana - 1) { 
-                    tdDia.textContent = ''; 
-                } else if (contador <= diasEnMes) {
-                    tdDia.textContent = contador;
-                    contador++;
-                } else {
-                    break;
-                }
-                trSemana.appendChild(tdDia); 
-            } 
-            tbody.appendChild(trSemana); 
-        } 
-        tablaMes.appendChild(tbody); 
-        contenedorCalendario.appendChild(tablaMes); 
-    } 
+
+        // Celdas vacías previas al primer día
+        for (let i = 1; i < primerDiaSemana; i++) {
+            const celdaVacia = document.createElement('div');
+            celdaVacia.classList.add('celda-dia', 'vacia');
+            cuerpoDias.appendChild(celdaVacia);
+        }
+
+        // Celdas de los días
+        for (let dia = 1; dia <= diasEnMes; dia++) {
+            const celdaDia = document.createElement('div');
+            celdaDia.classList.add('celda-dia');
+            celdaDia.textContent = dia;
+            cuerpoDias.appendChild(celdaDia);
+        }
+
+        tablaDias.appendChild(cuerpoDias);
+        contenedorMes.appendChild(tablaDias);
+        contenedorCalendario.appendChild(contenedorMes);
+    }
 }
